@@ -65,3 +65,81 @@ public class MainController extends StackPane {
             try { SaveLoadManager.load(engine.getDepot(), engine.getFlightQueue()); refreshUI(); logPanel.appendMessage("LOAD: State restored from airport_state.csv"); }
             catch (Exception ex) { logPanel.appendMessage("ERROR: Load failed - " + ex.getMessage()); }
         });
+ HBox controlBar = new HBox(16, clearBtn, saveBtn, loadBtn);
+        controlBar.setAlignment(Pos.CENTER);
+        controlBar.setPadding(new Insets(10));
+        controlBar.setStyle("-fx-background-color: #080808;");
+        RestockPanel restockPanel = new RestockPanel(r -> engine.purchaseSupply(r));
+        VBox leftCol = new VBox(10, queuePanel, queueWarningLabel, restockPanel);
+        leftCol.setPrefWidth(500);
+        depotPanel.setPrefWidth(300);
+        HBox centerArea = new HBox(10, leftCol, depotPanel);
+        centerArea.setPadding(new Insets(10));
+        centerArea.setStyle("-fx-background-color: #080808;");
+        VBox bottom = new VBox(0, logPanel);
+        bottom.setPadding(new Insets(0, 10, 10, 10));
+        bottom.setStyle("-fx-background-color: #080808;");
+        root.setCenter(new VBox(0, controlBar, centerArea, bottom));
+        return root;
+    }
+    private VBox buildTopBar(Difficulty difficulty) {
+        Label appTitle = new Label("GAA — SKYWAYS AIRPORT DISPATCH TYCOON");
+        appTitle.setFont(Font.font("Monospaced", FontWeight.BOLD, 16));
+        appTitle.setTextFill(Color.web("#39ff14"));
+        Label diffLabel = new Label(difficulty.getCity() + "  |  " + difficulty.getAirport() + "  [" + difficulty.getTier() + "]  |  flight every " + (int)difficulty.getSpawnIntervalSec() + "s");
+        diffLabel.setFont(Font.font("Monospaced", 11));
+        diffLabel.setTextFill(Color.web(difficulty.getAccentColor()));
+        winProgress.setPrefWidth(400); winProgress.setPrefHeight(14);
+        winProgress.setStyle("-fx-accent: " + difficulty.getAccentColor() + "; -fx-background-color: #1a1a1a; -fx-border-color: #333333; -fx-border-width: 1;");
+        winProgressLabel.setFont(Font.font("Monospaced", 11));
+        winProgressLabel.setTextFill(Color.web(difficulty.getAccentColor()));
+        HBox progressRow = new HBox(10, new Label("TARGET: "), winProgress, winProgressLabel);
+        progressRow.setAlignment(Pos.CENTER);
+        Label prt = (Label) progressRow.getChildren().get(0);
+        prt.setFont(Font.font("Monospaced", 11)); prt.setTextFill(Color.web("#555555"));
+        VBox topContent = new VBox(5, appTitle, diffLabel, progressRow);
+        topContent.setAlignment(Pos.CENTER);
+        HBox topBar = new HBox(topContent);
+        topBar.setAlignment(Pos.CENTER); topBar.setPadding(new Insets(12));
+        topBar.setStyle("-fx-background-color: #050505; -fx-border-color: #1a3a1a; -fx-border-width: 0 0 2 0;");
+        return new VBox(topBar);
+    }
+    private void refreshUI() {
+        depotPanel.update(engine.getDepot());
+        queuePanel.update(engine.getFlightQueue());
+        updateProgressBar();
+        updateQueueWarning();
+    }
+    private void updateProgressBar() {
+        double current = engine.getDepot().getBudget();
+        double start = engine.getDifficulty().getInitialBudget();
+        double target = engine.getDifficulty().getWinTargetBudget();
+        double progress = Math.max(0, Math.min(1.0, (current - start) / (target - start)));
+        winProgress.setProgress(progress);
+        winProgressLabel.setText(String.format("$%,.0f / $%,.0f  (%.0f%%)", current, target, progress * 100));
+    }
+    private void updateQueueWarning() {
+        int qSize = engine.getFlightQueue().size();
+        int maxSize = engine.getDifficulty().getMaxQueueSize();
+        if (qSize == 0) { queueWarningLabel.setText(""); }
+        else if (qSize >= maxSize - 2) {
+            queueWarningLabel.setText("!! QUEUE CRITICAL: " + qSize + "/" + maxSize + " — CLEAR FLIGHTS NOW !!");
+            queueWarningLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 11));
+            queueWarningLabel.setTextFill(Color.web("#ff4444"));
+        } else {
+            queueWarningLabel.setText("Queue: " + qSize + "/" + maxSize);
+            queueWarningLabel.setFont(Font.font("Monospaced", 11));
+            queueWarningLabel.setTextFill(Color.web("#888888"));
+        }
+    }
+    private void showWin() {
+        Difficulty d = engine.getDifficulty();
+        GameOverScreen screen = new GameOverScreen(true, "Budget target of $" + String.format("%,.0f", d.getWinTargetBudget()) + " reached!", d, engine.getDepot().getBudget(), engine.getClearedFlights(), onRestart);
+        getChildren().add(screen);
+    }
+    private void showLose(String reason) {
+        Difficulty d = engine.getDifficulty();
+        GameOverScreen screen = new GameOverScreen(false, reason, d, engine.getDepot().getBudget(), engine.getClearedFlights(), onRestart);
+        getChildren().add(screen);
+    }
+}
