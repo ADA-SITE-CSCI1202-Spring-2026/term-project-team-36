@@ -37,11 +37,11 @@ public class WelcomeScreen extends BorderPane {
     public WelcomeScreen(Consumer<Difficulty> onStart) {
         setStyle("-fx-background-color: #050505;");
 
-        // лого
+       
         VBox logoBox = buildLogoBox();
         setTop(logoBox);
 
-      //цент
+        
         VBox center = new VBox(28);
         center.setPadding(new Insets(20, 60, 20, 60));
         center.setAlignment(Pos.TOP_CENTER);
@@ -61,7 +61,7 @@ public class WelcomeScreen extends BorderPane {
 
         setCenter(scroll);
 
-        // низ
+
         Label ver = new Label("GAA GROUND OPS SYSTEM  v1.0  |  CSCI 1202  |  SKYWAYS INTL");
         ver.setFont(Font.font("Monospaced", 9));
         ver.setTextFill(Color.web("#333333"));
@@ -71,7 +71,9 @@ public class WelcomeScreen extends BorderPane {
         bottom.setStyle("-fx-background-color: #080808; -fx-border-color: #1a1a1a; -fx-border-width: 1 0 0 0;");
         setBottom(bottom);
     }
-     private VBox buildLogoBox() {
+
+  
+    private VBox buildLogoBox() {
         Label gaa = new Label("G  A  A");
         gaa.setFont(Font.font("Monospaced", FontWeight.BOLD, 52));
         gaa.setTextFill(Color.web("#39ff14"));
@@ -88,7 +90,7 @@ public class WelcomeScreen extends BorderPane {
         welcome.setFont(Font.font("Monospaced", FontWeight.BOLD, 17));
         welcome.setTextFill(Color.web("#a8ff78"));
 
-       //cursor
+    
         Timeline blink = new Timeline(
             new KeyFrame(Duration.seconds(0.8), e -> welcome.setVisible(false)),
             new KeyFrame(Duration.seconds(1.6), e -> welcome.setVisible(true))
@@ -107,7 +109,7 @@ public class WelcomeScreen extends BorderPane {
         return box;
     }
 
- //tutor
+    
     private VBox buildTutorialBox() {
         Label title = new Label(">> OPERATIONS BRIEFING");
         title.setFont(Font.font("Monospaced", FontWeight.BOLD, 13));
@@ -131,14 +133,15 @@ public class WelcomeScreen extends BorderPane {
         return box;
     }
 
-  //diff
+ 
     private Label buildDifficultyLabel() {
         Label l = new Label(">> SELECT AIRPORT LOCATION");
         l.setFont(Font.font("Monospaced", FontWeight.BOLD, 13));
         l.setTextFill(Color.web("#39ff14"));
         return l;
     }
-    //cities
+
+    
     private HBox buildDifficultyRow() {
         HBox row = new HBox(16);
         row.setAlignment(Pos.CENTER);
@@ -200,10 +203,10 @@ public class WelcomeScreen extends BorderPane {
             "-fx-cursor: hand;"
         );
 
-        // click =
+      
         card.setOnMouseClicked(e -> selectCard(d, card, accent, bg));
 
-     //additional effect
+       
         card.setOnMouseEntered(e -> {
             if (selectedDifficulty != d) {
                 card.setStyle(
@@ -244,7 +247,7 @@ public class WelcomeScreen extends BorderPane {
             );
         }
 
-      
+    
         clickedCard.setStyle(
             "-fx-background-color: " + bg + ";" +
             "-fx-border-color: " + accent + ";" +
@@ -266,7 +269,7 @@ public class WelcomeScreen extends BorderPane {
         beginBtn.setText("[ BEGIN OPERATIONS — " + d.getCity() + " ]");
     }
 
-   //begin button
+ 
     private VBox buildBeginArea(Consumer<Difficulty> onStart) {
         beginBtn = new Button("[ SELECT A LOCATION ABOVE ]");
         beginBtn.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
@@ -295,7 +298,7 @@ public class WelcomeScreen extends BorderPane {
         return box;
     }
 
- 
+  
     private Region buildSeparator() {
         Region r = new Region();
         r.setPrefHeight(1);
