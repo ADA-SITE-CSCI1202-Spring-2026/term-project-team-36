@@ -24,7 +24,13 @@ public class GameOverScreen extends StackPane {
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(48, 64, 48, 64));
         card.setMaxWidth(620);
-        
+        card.setStyle("-fx-background-color: " + darkBg + "; -fx-border-color: " + accent + "; -fx-border-width: 3; -fx-effect: dropshadow(gaussian, " + accent + ", 30, 0.5, 0, 0);");
+        Label iconLabel = new Label(icon);
+        iconLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 22));
+        iconLabel.setTextFill(Color.web(accent));
+        Label header = new Label(headerTx);
+        header.setFont(Font.font("Monospaced", FontWeight.BOLD, 34));
+        header.setTextFill(Color.web(accent));
         Label locationLabel = new Label(difficulty.getCity() + "  |  " + difficulty.getAirport() + "  |  " + difficulty.getTier());
         locationLabel.setFont(Font.font("Monospaced", 12));
         locationLabel.setTextFill(Color.web("#555555"));
@@ -42,13 +48,15 @@ public class GameOverScreen extends StackPane {
             statLine("Win Target", "$" + String.format("%,.0f", difficulty.getWinTargetBudget()), "#888888")
         );
         Label reasonLabel = new Label(reason);
-       
+        reasonLabel.setFont(Font.font("Monospaced", 12));
+        reasonLabel.setTextFill(Color.web(victory ? "#7aaa7a" : "#aa5555"));
+        reasonLabel.setWrapText(true);
         reasonLabel.setTextAlignment(TextAlignment.CENTER);
         reasonLabel.setMaxWidth(500);
         Region sep2 = makeSep(accent);
         Button restartBtn = new Button("[ RETURN TO MAIN SCREEN ]");
         restartBtn.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
-      
+        restartBtn.setStyle("-fx-background-color: " + darkBg + "; -fx-text-fill: " + accent + "; -fx-border-color: " + accent + "; -fx-border-width: 2; -fx-cursor: hand; -fx-padding: 12 32 12 32;");
         restartBtn.setOnMouseEntered(e -> restartBtn.setStyle("-fx-background-color: " + accent + "; -fx-text-fill: #000000; -fx-border-color: " + accent + "; -fx-border-width: 2; -fx-cursor: hand; -fx-padding: 12 32 12 32;"));
         restartBtn.setOnMouseExited(e -> restartBtn.setStyle("-fx-background-color: " + darkBg + "; -fx-text-fill: " + accent + "; -fx-border-color: " + accent + "; -fx-border-width: 2; -fx-cursor: hand; -fx-padding: 12 32 12 32;"));
         restartBtn.setOnAction(e -> onRestart.run());
