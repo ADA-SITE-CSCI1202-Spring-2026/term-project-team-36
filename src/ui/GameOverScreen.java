@@ -64,7 +64,7 @@ public class GameOverScreen extends StackPane {
 
         Region sep1 = makeSep(accent);
 
-        
+       
         var statsBox = new VBox(8);
         statsBox.setAlignment(Pos.CENTER_LEFT);
         statsBox.setPadding(new Insets(0, 20, 0, 20));
@@ -87,7 +87,7 @@ public class GameOverScreen extends StackPane {
                      "#888888")
         );
 
-     
+      
         if (stats.totalCleared() > 0) {
             statsBox.getChildren().add(makeSep("#333333"));
 
@@ -106,7 +106,7 @@ public class GameOverScreen extends StackPane {
                 );
             });
 
-          
+       
             statsBox.getChildren().add(
                 statLine("Avg Revenue",
                          "$" + String.format("%,.0f", stats.averageRevenue()),
@@ -114,7 +114,7 @@ public class GameOverScreen extends StackPane {
             );
         }
 
-       
+        
         var reasonLabel = new Label(reason);
         reasonLabel.setFont(Font.font("Monospaced", 12));
         reasonLabel.setTextFill(Color.web(victory ? "#7aaa7a" : "#aa5555"));
@@ -124,7 +124,7 @@ public class GameOverScreen extends StackPane {
 
         Region sep2 = makeSep(accent);
 
-      
+       
         var restartBtn = new Button("[ RETURN TO MAIN SCREEN ]");
         restartBtn.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
         restartBtn.setStyle(
@@ -135,7 +135,7 @@ public class GameOverScreen extends StackPane {
             "-fx-cursor: hand;" +
             "-fx-padding: 12 32 12 32;"
         );
-        
+    
         restartBtn.setOnMouseEntered(e -> restartBtn.setStyle(
             "-fx-background-color: " + accent + ";" +
             "-fx-text-fill: #000000;" +
@@ -162,7 +162,7 @@ public class GameOverScreen extends StackPane {
 
         getChildren().add(card);
 
-    
+      
         setOpacity(0);
         var fade = new FadeTransition(Duration.millis(500), this);
         fade.setFromValue(0); fade.setToValue(1);
