@@ -27,15 +27,15 @@ public class RestockPanel extends VBox {
         title.setTextFill(Color.web("#ff7878"));
 
         Label hint = new Label("Jet Fuel: +500L for $2,000  |  Meals: +50 units for $500");
-       
+        hint.setFont(Font.font("Monospaced", 10));
         hint.setTextFill(Color.web("#aa5555"));
 
         resourceDropdown = new ComboBox<>();
         resourceDropdown.getItems().addAll(Resource.values());
-     
+        resourceDropdown.setValue(Resource.JET_FUEL);
         resourceDropdown.setStyle(
             "-fx-background-color: #2a0000;" +
-            "-fx-text-fill: #ff7868;" +
+            "-fx-text-fill: #ff7878;" +
             "-fx-font-family: 'Monospaced';"
         );
 
@@ -43,7 +43,8 @@ public class RestockPanel extends VBox {
         purchaseBtn.setFont(Font.font("Monospaced", FontWeight.BOLD, 12));
         purchaseBtn.setStyle(
             "-fx-background-color: #3a0000;" +
-            "-fx-border-color: #7b3a3a;" +
+            "-fx-text-fill: #ff7878;" +
+            "-fx-border-color: #7a3a3a;" +
             "-fx-border-width: 1;" +
             "-fx-cursor: hand;"
         );
