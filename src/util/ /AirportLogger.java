@@ -2,6 +2,7 @@ package util;
 
 public class AirportLogger {
 
+    
     private final StringBuilder log;          
     private final String[] recentMessages;    
     private int messageIndex = 0;
