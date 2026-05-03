@@ -1,0 +1,225 @@
+@startuml SkywaysAirportDispatch
+' UML Class Diagram — Skyways Airport Dispatch Tycoon
+' Render at https://www.plantuml.com/plantuml or with VS Code PlantUML extension
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+hide circle
+
+' ─────────────── MODEL PACKAGE ───────────────
+package model {
+
+    abstract class Aircraft <<sealed, Serializable, Comparable>> {
+        - flightNumber: String
+        - requiredFuel: int
+        - requiredMeals: int
+        - turnaroundTime: int
+        - reward: BigDecimal
+        + {abstract} getType(): String
+        + {abstract} getRequiredResources(): Map<Resource,Integer>
+        + toString(detailed: boolean): String
+        + compareTo(other: Aircraft): int
+    }
+
+    class CommercialJet <<final>> {
+        + CommercialJet(flightNumber: String)
+    }
+    class CargoFreighter <<final>> {
+        + CargoFreighter(flightNumber: String)
+    }
+    class PrivateCharter <<final>> {
+        + PrivateCharter(flightNumber: String)
+    }
+
+    Aircraft <|-- CommercialJet
+    Aircraft <|-- CargoFreighter
+    Aircraft <|-- PrivateCharter
+
+    enum Resource {
+        JET_FUEL
+        MEALS
+        + getDisplayName(): String
+        + getDefaultRestockAmount(): int
+        + getRestockCost(): double
+    }
+
+    enum Difficulty {
+        BAKU
+        MOSCOW
+        TOKYO
+        + getCity(): String
+        + getSpawnIntervalSec(): double
+        + getInitialBudget(): double
+        + getWinTargetBudget(): double
+        + getMaxQueueSize(): int
+    }
+
+    class DepotManager {
+        - depot: Map<Resource,Integer>
+        - budget: BigDecimal
+        + hasResources(req: Map): boolean <<sync>>
+        + consumeResources(req: Map): void <<sync>>
+        + restockResource(r,amt,cost): void <<sync, overloaded>>
+        + addBudget(amt: BigDecimal): void <<sync>>
+        + getBudget(): BigDecimal
+        + getBudgetAsDouble(): double
+    }
+
+    class "BoundedQueue<T>" as BoundedQueue {
+        - elements: LinkedList<T>
+        - capacity: int
+        + offer(item: T): boolean <<sync>>
+        + poll(): T <<sync>>
+        + isFull(): boolean <<sync>>
+        + transform<R>(mapper: Function<T,R>): List<R>
+        + iterator(): Iterator<T> <<sync>>
+    }
+
+    class FlightStatistics {
+        - events: List<FlightEvent>
+        + record(event: FlightEvent): void
+        + totalRevenue(): BigDecimal
+        + countByType(): Map<String,Long>
+        + revenueByType(): SortedMap<String,BigDecimal>
+        + averageRevenue(): double
+    }
+
+    class FlightEvent <<record>> {
+        + flightNumber: String
+        + aircraftType: String
+        + revenue: BigDecimal
+        + timestamp: LocalDateTime
+    }
+
+    class SupplyOrder <<record>> {
+        + resource: Resource
+        + quantity: int
+        + cost: BigDecimal
+        + timestamp: LocalDateTime
+    }
+
+    class SimulationEngine <<Runnable>> {
+        - flightQueue: BoundedQueue<Aircraft>
+        - depot: DepotManager
+        - groundCrews: List<IGroundService>
+        - difficulty: Difficulty
+        - statistics: FlightStatistics
+        - logger: AirportLogger
+        - simulationThread: Thread
+        - {volatile} gameOver: boolean
+        + run(): void
+        + processNextFlight(): boolean <<sync>>
+        + purchaseSupply(r: Resource): boolean <<sync>>
+        + startTimer(): void
+        + stopTimer(): void
+        + snapshot(): GameState
+    }
+
+    class GameState <<nested static>> {
+        - budget: BigDecimal
+        - queueSize: int
+        - clearedFlights: int
+    }
+    SimulationEngine +-- GameState
+
+    SimulationEngine "1" *-- "1" BoundedQueue
+    SimulationEngine "1" *-- "1" DepotManager
+    SimulationEngine "1" *-- "1" FlightStatistics
+    DepotManager o-- Resource
+    FlightStatistics "1" *-- "*" FlightEvent
+}
+
+' ─────────────── SERVICE PACKAGE ───────────────
+package service {
+    interface IGroundService {
+        + canProcess(ac: Aircraft): boolean
+        + serviceFlight(ac: Aircraft): void
+        + getServiceType(): String
+    }
+    class FuelingTruck
+    class CateringVan
+    class BaggageHandler
+    IGroundService <|.. FuelingTruck
+    IGroundService <|.. CateringVan
+    IGroundService <|.. BaggageHandler
+    SimulationEngine "1" o-- "*" IGroundService
+}
+
+' ─────────────── EXCEPTION PACKAGE ───────────────
+package exception {
+    class AirportException <<checked>>
+    class InsufficientResourceException
+    class QueueOverflowException <<runtime>>
+    class BankruptcyException <<runtime>>
+    AirportException <|-- InsufficientResourceException
+}
+
+' ─────────────── PERSISTENCE PACKAGE ───────────────
+package persistence {
+    class SaveLoadManager {
+        + {static} save(depot, queue): void
+        + {static} load(depot, queue): void
+        + {static} saveBinary(depot, queue): void
+        + {static} loadBinary(depot, queue): void
+    }
+    SaveLoadManager ..> DepotManager : <<reads/writes>>
+    SaveLoadManager ..> BoundedQueue : <<reads/writes>>
+    SaveLoadManager ..> Aircraft : <<reconstructs>>
+}
+
+' ─────────────── UTIL PACKAGE ───────────────
+package util {
+    class AirportLogger {
+        - log: StringBuilder
+        - recentMessages: String[]
+        + append(msg: String): void
+        + getRecentMessages(): String[]
+    }
+    class LocalizationManager {
+        - {static} bundle: ResourceBundle
+        + {static} get(key): String
+        + {static} setLocale(loc): void
+    }
+    class ReflectionInspector {
+        + {static} inspect(obj): String
+        + {static} inspectFields(obj): String
+    }
+}
+
+' ─────────────── UI PACKAGE ───────────────
+package ui {
+    class WelcomeScreen
+    class QueuePanel
+    class DepotPanel
+    class LogPanel
+    class RestockPanel
+    class GameOverScreen
+}
+
+' ─────────────── MAIN PACKAGE ───────────────
+package main {
+    class Main <<JavaFX Application>> {
+        + {static} main(args: String[]): void
+        - launchGame(diff: Difficulty): void
+    }
+    class MainController {
+        - engine: SimulationEngine
+        - queuePanel: QueuePanel
+        - depotPanel: DepotPanel
+        - logPanel: LogPanel
+        + refreshUI(): void
+    }
+    Main --> MainController
+    Main --> WelcomeScreen
+    MainController *-- SimulationEngine
+    MainController *-- QueuePanel
+    MainController *-- DepotPanel
+    MainController *-- LogPanel
+    MainController *-- RestockPanel
+    MainController ..> GameOverScreen
+    QueuePanel ..> BoundedQueue
+    DepotPanel ..> DepotManager
+    GameOverScreen ..> FlightStatistics
+}
+
+@enduml
