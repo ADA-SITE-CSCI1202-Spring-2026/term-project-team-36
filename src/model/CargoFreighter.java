@@ -1,12 +1,15 @@
 package model;
 
+import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class CargoFreighter extends Aircraft {
+public final class CargoFreighter extends Aircraft {
+
+    private static final long serialVersionUID = 1L;
 
     public CargoFreighter(String flightNumber) {
-        super(flightNumber, 800, 0, 60, 5000.0);
+        super(flightNumber, 800, 0, 60, new BigDecimal("5000"));
     }
 
     @Override
