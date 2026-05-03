@@ -1,12 +1,15 @@
 package model;
 
+import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class PrivateCharter extends Aircraft {
+public final class PrivateCharter extends Aircraft {
+
+    private static final long serialVersionUID = 1L;
 
     public PrivateCharter(String flightNumber) {
-        super(flightNumber, 150, 20, 20, 3000.0);
+        super(flightNumber, 150, 20, 20, new BigDecimal("3000"));
     }
 
     @Override
