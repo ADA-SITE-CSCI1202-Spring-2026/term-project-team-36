@@ -1,6 +1,8 @@
 package model;
 
-public enum Resource {
+import java.io.Serializable;
+
+public enum Resource implements Serializable {
     JET_FUEL("Jet Fuel", "L"),
     MEALS("In-flight Meals", "units");
 
@@ -13,7 +15,21 @@ public enum Resource {
     }
 
     public String getDisplayName() { return displayName; }
-    public String getUnit() { return unit; }
+    public String getUnit()        { return unit; }
+
+    public int getDefaultRestockAmount() {
+        return switch (this) {
+            case JET_FUEL -> 500;
+            case MEALS    -> 50;
+        };
+    }
+
+    public double getRestockCost() {
+        return switch (this) {
+            case JET_FUEL -> 2000.0;
+            case MEALS    -> 500.0;
+        };
+    }
 
     @Override
     public String toString() { return displayName; }
