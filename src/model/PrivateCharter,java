@@ -1,0 +1,22 @@
+package model;
+
+import java.util.EnumMap;
+import java.util.Map;
+
+public class PrivateCharter extends Aircraft {
+
+    public PrivateCharter(String flightNumber) {
+        super(flightNumber, 150, 20, 20, 3000.0);
+    }
+
+    @Override
+    public String getType() { return "PrivateCharter"; }
+
+    @Override
+    public Map<Resource, Integer> getRequiredResources() {
+        var map = new EnumMap<Resource, Integer>(Resource.class);
+        map.put(Resource.JET_FUEL, getRequiredFuel());
+        map.put(Resource.MEALS, getRequiredMeals());
+        return map;
+    }
+}
