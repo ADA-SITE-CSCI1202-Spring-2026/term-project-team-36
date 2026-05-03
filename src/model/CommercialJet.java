@@ -1,12 +1,15 @@
 package model;
 
+import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class CommercialJet extends Aircraft {
+public final class CommercialJet extends Aircraft {
+
+    private static final long serialVersionUID = 1L;
 
     public CommercialJet(String flightNumber) {
-        super(flightNumber, 500, 200, 45, 8000.0);
+        super(flightNumber, 500, 200, 45, new BigDecimal("8000"));
     }
 
     @Override
@@ -14,7 +17,7 @@ public class CommercialJet extends Aircraft {
 
     @Override
     public Map<Resource, Integer> getRequiredResources() {
-        var map = new EnumMap<Resource, Integer>(Resource.class);
+        var map = new EnumMap<Resource, Integer>(Resource.class); 
         map.put(Resource.JET_FUEL, getRequiredFuel());
         map.put(Resource.MEALS, getRequiredMeals());
         return map;
