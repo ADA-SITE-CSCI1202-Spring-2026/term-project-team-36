@@ -53,3 +53,17 @@ Double-click **`run.sh`** or run in terminal:
 
 - **SAVE STATE** → writes `airport_state.csv` in the project folder  
 - **LOAD STATE** → restores exact queue, resources, and budget
+
+---
+
+## Screenshots
+
+| | | |
+|:---:|:---:|:---:|
+| ![Gameplay 1](docs/gameplay_1.png) | ![Gameplay 2](docs/gameplay_2.png) | ![Gameplay 3](docs/gameplay_3.png) |
+
+---
+
+## UML Class Diagram
+
+![UML Class Diagram](docs/uml_diagram.png)

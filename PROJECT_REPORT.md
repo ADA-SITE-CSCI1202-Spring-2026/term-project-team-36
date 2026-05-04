@@ -31,14 +31,17 @@
 3. If yes, every `IGroundService` in the crew list whose `canProcess(aircraft)` returns true executes its task; the depot is debited; revenue is added to the budget; and a `FlightEvent` record is appended to `FlightStatistics`.
 4. The game ends with a **victory** when the budget reaches the win target, a **bankruptcy** loss when the budget falls below zero, or a **queue overflow** loss when too many aircraft accumulate. The end screen shows live statistics computed from recorded flight events using the Stream API.
 
+### Gameplay Screenshots
+
+| | | |
+|:---:|:---:|:---:|
+| ![Gameplay 1](docs/gameplay_1.png) | ![Gameplay 2](docs/gameplay_2.png) | ![Gameplay 3](docs/gameplay_3.png) |
+
 ---
 
 ## 3.3 UML Class Diagram
 
-<!-- ╔══════════════════════════════════════════════════════════════════════╗
-     ║  INSERT UML.png HERE — render UML.puml at https://plantuml.com/      ║
-     ║  and paste the exported image into the final PDF below this line.    ║
-     ╚══════════════════════════════════════════════════════════════════════╝ -->
+![UML Class Diagram](docs/uml_diagram.png)
 
 **High-level relationships shown in the diagram:**
 - `Aircraft` (sealed abstract) ◄── `CommercialJet`, `CargoFreighter`, `PrivateCharter` (final)
