@@ -27,19 +27,26 @@ public class Main extends Application {
     }
 
     private void showWelcomeScreen() {
-        var welcome = new WelcomeScreen(this::launchGame);
+        var welcome = new WelcomeScreen(
+            d -> launchGame(d, false),
+            d -> launchGame(d, true)
+        );
         primaryStage.setScene(new Scene(welcome, 900, 720));
     }
 
     private void launchGame(Difficulty difficulty) {
+        launchGame(difficulty, false);
+    }
+
+    private void launchGame(Difficulty difficulty, boolean loadSave) {
         var game = new MainController(difficulty, this::showWelcomeScreen);
         primaryStage.setScene(new Scene(game, 960, 740));
-
         primaryStage.setTitle(
             "GAA — " + difficulty.getCity() +
             " | " + difficulty.getAirport() +
             "  [" + difficulty.getTier() + "]"
         );
+        if (loadSave) game.loadSave();
     }
 
     public static void main(String[] args) {

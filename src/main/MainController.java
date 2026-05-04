@@ -92,7 +92,7 @@ public class MainController extends StackPane {
 
         saveBtn.setOnAction(e -> {
             try {
-                SaveLoadManager.save(engine.getDepot(), engine.getFlightQueue());
+                SaveLoadManager.save(engine.getDepot(), engine.getFlightQueue(), engine.getDifficulty());
                 logPanel.appendMessage("SAVE: State written to airport_state.csv");
             } catch (IOException ex) {
                 logPanel.appendMessage("ERROR: Save failed - " + ex.getMessage());
@@ -118,7 +118,26 @@ public class MainController extends StackPane {
             }
         });
 
-        var controlBar = new HBox(16, clearBtn, saveBtn, loadBtn);
+        var menuBtn = new Button("[ MAIN MENU ]");
+        menuBtn.setFont(Font.font("Monospaced", 11));
+        menuBtn.setStyle(
+            "-fx-background-color: #0d0d0d; -fx-text-fill: #555555;" +
+            "-fx-border-color: #333333; -fx-border-width: 1; -fx-cursor: hand;"
+        );
+        menuBtn.setOnMouseEntered(e -> menuBtn.setStyle(
+            "-fx-background-color: #1a0000; -fx-text-fill: #ff4444;" +
+            "-fx-border-color: #ff4444; -fx-border-width: 1; -fx-cursor: hand;"
+        ));
+        menuBtn.setOnMouseExited(e -> menuBtn.setStyle(
+            "-fx-background-color: #0d0d0d; -fx-text-fill: #555555;" +
+            "-fx-border-color: #333333; -fx-border-width: 1; -fx-cursor: hand;"
+        ));
+        menuBtn.setOnAction(e -> {
+            engine.stopTimer();
+            onRestart.run();
+        });
+
+        var controlBar = new HBox(16, clearBtn, saveBtn, loadBtn, menuBtn);
         controlBar.setAlignment(Pos.CENTER);
         controlBar.setPadding(new Insets(10));
         controlBar.setStyle("-fx-background-color: #080808;");
@@ -220,6 +239,16 @@ public class MainController extends StackPane {
             queueWarningLabel.setText("Queue: " + qSize + "/" + maxSize);
             queueWarningLabel.setFont(Font.font("Monospaced", 11));
             queueWarningLabel.setTextFill(Color.web("#888888"));
+        }
+    }
+
+    public void loadSave() {
+        try {
+            SaveLoadManager.load(engine.getDepot(), engine.getFlightQueue());
+            refreshUI();
+            logPanel.appendMessage("LOAD: Session restored from saved state.");
+        } catch (IOException ex) {
+            logPanel.appendMessage("ERROR: Could not restore save — " + ex.getMessage());
         }
     }
 

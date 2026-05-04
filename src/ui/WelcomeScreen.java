@@ -15,7 +15,10 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import model.Difficulty;
+import persistence.SaveLoadManager;
+import persistence.SaveLoadManager.SaveInfo;
 
+import java.time.Instant;
 import java.util.function.Consumer;
 
 public class WelcomeScreen extends BorderPane {
@@ -33,24 +36,29 @@ public class WelcomeScreen extends BorderPane {
         "08  Save your session anytime. Load it to resume operations.",
     };
 
-    public WelcomeScreen(Consumer<Difficulty> onStart) {
+    public WelcomeScreen(Consumer<Difficulty> onStart, Consumer<Difficulty> onLoadSave) {
         setStyle("-fx-background-color: #050505;");
 
-        VBox logoBox = buildLogoBox();
-        setTop(logoBox);
+        setTop(buildLogoBox());
 
         VBox center = new VBox(28);
         center.setPadding(new Insets(20, 60, 20, 60));
         center.setAlignment(Pos.TOP_CENTER);
 
-        center.getChildren().addAll(
-            buildTutorialBox(),
-            buildSeparator(),
-            buildDifficultyLabel(),
-            buildDifficultyRow(),
-            buildSeparator(),
-            buildBeginArea(onStart)
-        );
+        VBox savesSection = buildSavesSection(onLoadSave);
+
+        center.getChildren().add(buildTutorialBox());
+        center.getChildren().add(buildSeparator());
+
+        if (savesSection != null) {
+            center.getChildren().add(savesSection);
+            center.getChildren().add(buildSeparator());
+        }
+
+        center.getChildren().add(buildDifficultyLabel());
+        center.getChildren().add(buildDifficultyRow());
+        center.getChildren().add(buildSeparator());
+        center.getChildren().add(buildBeginArea(onStart));
 
         ScrollPane scroll = new ScrollPane(center);
         scroll.setFitToWidth(true);
@@ -126,6 +134,115 @@ public class WelcomeScreen extends BorderPane {
         return box;
     }
 
+    private VBox buildSavesSection(Consumer<Difficulty> onLoadSave) {
+        SaveInfo info = SaveLoadManager.readCsvSaveInfo();
+        if (info == null || info.difficulty() == null) return null;
+
+        Label title = new Label(">> SAVED SESSION DETECTED");
+        title.setFont(Font.font("Monospaced", FontWeight.BOLD, 13));
+        title.setTextFill(Color.web("#39ff14"));
+
+        Label sub = new Label("A previous director session is available for restoration.");
+        sub.setFont(Font.font("Monospaced", 10));
+        sub.setTextFill(Color.web("#3a6a3a"));
+
+        VBox card = buildSaveCard(info, onLoadSave);
+
+        VBox box = new VBox(10, title, sub, card);
+        box.setPadding(new Insets(16));
+        box.setStyle(
+            "-fx-background-color: #060e06;" +
+            "-fx-border-color: #1a4a1a;" +
+            "-fx-border-width: 1;"
+        );
+        return box;
+    }
+
+    private VBox buildSaveCard(SaveInfo info, Consumer<Difficulty> onLoadSave) {
+        Difficulty d = info.difficulty();
+        String accent = d.getAccentColor();
+
+        Label fileRow = new Label("FILE  airport_state.csv");
+        fileRow.setFont(Font.font("Monospaced", 10));
+        fileRow.setTextFill(Color.web("#404040"));
+
+        Label diffRow = new Label(d.getCity() + "  ·  " + d.getAirport() + "  [ " + d.getTier() + " ]");
+        diffRow.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
+        diffRow.setTextFill(Color.web(accent));
+
+        Region divider = new Region();
+        divider.setPrefHeight(1);
+        divider.setStyle("-fx-background-color: #1a2a1a;");
+
+        Label budgetRow = new Label(String.format("BUDGET   $%,.0f", info.budget()));
+        budgetRow.setFont(Font.font("Monospaced", 11));
+        budgetRow.setTextFill(Color.web("#7aaa7a"));
+
+        String qStr = info.queueCount() == 0
+            ? "QUEUE    — no flights pending"
+            : "QUEUE    " + info.queueCount() + " flight" + (info.queueCount() != 1 ? "s" : "") + " in holding pattern";
+        Label queueRow = new Label(qStr);
+        queueRow.setFont(Font.font("Monospaced", 11));
+        queueRow.setTextFill(Color.web("#7aaa7a"));
+
+        Label savedRow = new Label("SAVED    " + timeAgo(info.savedAt()));
+        savedRow.setFont(Font.font("Monospaced", 11));
+        savedRow.setTextFill(Color.web("#555555"));
+
+        Button resumeBtn = buildResumeButton(d, accent, onLoadSave);
+
+        VBox stats = new VBox(5, budgetRow, queueRow, savedRow);
+
+        VBox card = new VBox(10, fileRow, diffRow, divider, stats, resumeBtn);
+        card.setPadding(new Insets(16));
+        card.setStyle(
+            "-fx-background-color: #040c04;" +
+            "-fx-border-color: " + accent + "55;" +
+            "-fx-border-width: 1;"
+        );
+        return card;
+    }
+
+    private Button buildResumeButton(Difficulty d, String accent, Consumer<Difficulty> onLoadSave) {
+        String baseStyle =
+            "-fx-background-color: #001800;" +
+            "-fx-text-fill: " + accent + ";" +
+            "-fx-border-color: " + accent + ";" +
+            "-fx-border-width: 1;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 9 28 9 28;";
+        String hoverStyle =
+            "-fx-background-color: #002800;" +
+            "-fx-text-fill: " + accent + ";" +
+            "-fx-border-color: " + accent + ";" +
+            "-fx-border-width: 2;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 9 28 9 28;" +
+            "-fx-effect: dropshadow(gaussian, " + accent + ", 10, 0.35, 0, 0);";
+
+        Button btn = new Button("[ RESUME OPERATIONS — " + d.getCity() + " ]");
+        btn.setFont(Font.font("Monospaced", FontWeight.BOLD, 12));
+        btn.setStyle(baseStyle);
+        btn.setOnMouseEntered(e -> btn.setStyle(hoverStyle));
+        btn.setOnMouseExited(e  -> btn.setStyle(baseStyle));
+        btn.setOnAction(e -> {
+            FadeTransition ft = new FadeTransition(Duration.millis(400), this);
+            ft.setFromValue(1.0);
+            ft.setToValue(0.0);
+            ft.setOnFinished(ev -> onLoadSave.accept(d));
+            ft.play();
+        });
+        return btn;
+    }
+
+    private static String timeAgo(Instant savedAt) {
+        long sec = Instant.now().getEpochSecond() - savedAt.getEpochSecond();
+        if (sec < 60)    return "just now";
+        if (sec < 3600)  return (sec / 60) + " min ago";
+        if (sec < 86400) return (sec / 3600) + " hr ago";
+        return (sec / 86400) + " days ago";
+    }
+
     private Label buildDifficultyLabel() {
         Label l = new Label(">> SELECT AIRPORT LOCATION");
         l.setFont(Font.font("Monospaced", FontWeight.BOLD, 13));
@@ -136,10 +253,8 @@ public class WelcomeScreen extends BorderPane {
     private HBox buildDifficultyRow() {
         HBox row = new HBox(16);
         row.setAlignment(Pos.CENTER);
-
         for (Difficulty d : Difficulty.values()) {
-            VBox card = buildCityCard(d);
-            row.getChildren().add(card);
+            row.getChildren().add(buildCityCard(d));
         }
         return row;
     }
@@ -195,7 +310,6 @@ public class WelcomeScreen extends BorderPane {
         );
 
         card.setOnMouseClicked(e -> selectCard(d, card, accent, bg));
-
         card.setOnMouseEntered(e -> {
             if (selectedDifficulty != d) {
                 card.setStyle(
@@ -216,7 +330,6 @@ public class WelcomeScreen extends BorderPane {
                 );
             }
         });
-
         return card;
     }
 
@@ -225,7 +338,7 @@ public class WelcomeScreen extends BorderPane {
 
         HBox row = (HBox) clickedCard.getParent();
         for (int i = 0; i < row.getChildren().size(); i++) {
-            VBox c = (VBox) row.getChildren().get(i);
+            VBox c  = (VBox) row.getChildren().get(i);
             Difficulty cd = Difficulty.values()[i];
             c.setStyle(
                 "-fx-background-color: " + cd.getBgColor() + ";" +

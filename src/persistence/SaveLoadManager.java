@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,39 @@ public class SaveLoadManager {
     private static final String CSV_FILE = "airport_state.csv";
     private static final String BIN_FILE = "airport_state.dat";
 
-    public static void save(DepotManager depot, BoundedQueue<Aircraft> queue)
+    public record SaveInfo(Difficulty difficulty, double budget, int queueCount, Instant savedAt) {}
+
+    public static SaveInfo readCsvSaveInfo() {
+        Path path = Path.of(CSV_FILE);
+        if (!Files.exists(path)) return null;
+        try {
+            Instant savedAt = Files.getLastModifiedTime(path).toInstant();
+            BigDecimal budget = BigDecimal.ZERO;
+            int queueCount = 0;
+            Difficulty difficulty = null;
+            for (String rawLine : Files.readAllLines(path, StandardCharsets.UTF_8)) {
+                String line = rawLine.trim();
+                if (line.isEmpty()) continue;
+                String[] parts = line.split(",");
+                switch (parts[0]) {
+                    case "DIFFICULTY" -> {
+                        try { difficulty = Difficulty.valueOf(parts[1]); } catch (Exception ignored) {}
+                    }
+                    case "BUDGET"     -> budget = new BigDecimal(parts[1]);
+                    case "TASK"       -> queueCount++;
+                }
+            }
+            return new SaveInfo(difficulty, budget.doubleValue(), queueCount, savedAt);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    public static void save(DepotManager depot, BoundedQueue<Aircraft> queue, Difficulty difficulty)
             throws IOException {
         var lines = new ArrayList<String>();
 
+        if (difficulty != null) lines.add("DIFFICULTY," + difficulty.name());
         lines.add("BUDGET," + depot.getBudget().toPlainString());
 
         for (Resource r : Resource.values()) {
@@ -57,6 +87,7 @@ public class SaveLoadManager {
             String[] parts = line.split(",");
 
             switch (parts[0]) {
+                case "DIFFICULTY" -> { /* metadata only, skip */ }
                 case "BUDGET" -> depot.setBudget(new BigDecimal(parts[1]));
                 case "RESOURCE" -> depot.setResource(
                     Resource.valueOf(parts[1]), Integer.parseInt(parts[2]));
